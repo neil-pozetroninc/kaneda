@@ -8,7 +8,6 @@ except ImportError:
     r = None
 
 from kaneda.exceptions import ImproperlyConfigured
-from rethinkdb.errors import ReqlDriverError
 
 from .base import BaseBackend
 
@@ -69,7 +68,7 @@ class RethinkBackend(BaseBackend):
     def report(self, name, metric, value, tags, id_):
         try:
             r.expr(1)
-        except ReqlDriverError:
+        except r.errors.ReqlDriverError:
             self.connection.reconnect(true, self.timeout);
         try:
             table_name = self._get_table_name(metric)
