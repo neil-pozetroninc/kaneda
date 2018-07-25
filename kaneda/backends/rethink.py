@@ -8,6 +8,7 @@ except ImportError:
     r = None
 
 from kaneda.exceptions import ImproperlyConfigured
+from rethinkdb.errors import ReqlDriverError
 
 from .base import BaseBackend
 
@@ -28,6 +29,9 @@ class RethinkBackend(BaseBackend):
 
     def __init__(self, db, table_name=None, connection=None, host=None, port=None, user=None, password=None,
                  timeout=0.3):
+
+        self.timeout = timeout
+
         if not r:
             raise ImproperlyConfigured('You need to install the rethinkdb library to use the RethinkDB backend.')
         if connection:
@@ -63,6 +67,10 @@ class RethinkBackend(BaseBackend):
         return self.table_name or metric
 
     def report(self, name, metric, value, tags, id_):
+        try:
+            r.expr(1)
+        except ReqlDriverError:
+            self.connection.reconnect(true, self.timeout);
         try:
             table_name = self._get_table_name(metric)
             self._create_table(metric)
