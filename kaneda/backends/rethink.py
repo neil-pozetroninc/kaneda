@@ -8,7 +8,7 @@ except ImportError:
     r = None
 
 from kaneda.exceptions import ImproperlyConfigured
-from rethinkdb.errors import ReqlDriverError
+from rethink.errors import ReqlDriverError
 
 from .base import BaseBackend
 
