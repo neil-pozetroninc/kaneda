@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import logging
 
 try:
-    import rethinkdb as r
+    from rethinkdb import r
 except ImportError:
     r = None
 
