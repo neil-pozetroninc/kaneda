@@ -46,12 +46,12 @@ class RethinkBackend(BaseBackend):
                 self.connection = r.connect(host=host, port=port, db=db, user=user, password=password, timeout=timeout)
             else:
                 self.connection = r.connect(host=host, port=port, db=db, timeout=timeout)
-        
-        self.connection.check_open = types.MethodType( auto_reconnect, c )        
+             
         self.db = db
         self.table_name = table_name
         if self.connection is None:
             self.connection = r.connect(db=db, timeout=timeout)
+        self.connection.check_open = types.MethodType( auto_reconnect, self.connection)   
         self._create_database()
 
     def _get_payload(self, name, value, tags, id_):
