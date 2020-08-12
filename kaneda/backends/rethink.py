@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import logging
+import types
 
 try:
     from rethinkdb import r
@@ -11,6 +12,11 @@ from kaneda.exceptions import ImproperlyConfigured
 
 from .base import BaseBackend
 
+
+def auto_reconnect(self):
+    if self._instance is None or not self._instance.is_open():
+        self.reconnect()
+        
 
 class RethinkBackend(BaseBackend):
     """
@@ -40,6 +46,8 @@ class RethinkBackend(BaseBackend):
                 self.connection = r.connect(host=host, port=port, db=db, user=user, password=password, timeout=timeout)
             else:
                 self.connection = r.connect(host=host, port=port, db=db, timeout=timeout)
+        
+        self.connection.check_open = types.MethodType( auto_reconnect, c )        
         self.db = db
         self.table_name = table_name
         if self.connection is None:
