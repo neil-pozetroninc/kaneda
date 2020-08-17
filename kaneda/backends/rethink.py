@@ -51,7 +51,7 @@ class RethinkBackend(BaseBackend):
         self.table_name = table_name
         if self.connection is None:
             self.connection = r.connect(db=db, timeout=timeout)
-        self.connection.check_open = types.MethodType( auto_reconnect, self.connection)   
+        # self.connection.check_open = types.MethodType( auto_reconnect, self.connection)   
         self._create_database()
 
     def _get_payload(self, name, value, tags, id_):
@@ -77,7 +77,7 @@ class RethinkBackend(BaseBackend):
         try:
             r.expr(1)
         except r.errors.ReqlDriverError:
-            self.connection.reconnect(true, self.timeout);
+            self.connection.reconnect(True, self.timeout);
         try:
             table_name = self._get_table_name(metric)
             self._create_table(metric)
