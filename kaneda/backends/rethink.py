@@ -71,9 +71,16 @@ class RethinkBackend(BaseBackend):
 
     def report(self, name, metric, value, tags, id_):
         try:
-            r.expr(1)
+            r.expr(1).run(self.connection)
         except ReqlError:
-            self.connection.reconnect(True, self.timeout);
+            try:
+                self.connection.reconnect(True, self.timeout)
+            except ReqlError:
+                try:
+                    self.connection.close()
+                except ReqlError:
+                    pass
+                self.connection = r.connect(db=self.db, timeout=self.timeout)
         try:
             table_name = self._get_table_name(metric)
             self._create_table(metric)
