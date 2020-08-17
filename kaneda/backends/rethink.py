@@ -7,16 +7,13 @@ try:
     from rethinkdb import r
 except ImportError:
     r = None
+    
+from rethinkdb.errors import ReqlError
 
 from kaneda.exceptions import ImproperlyConfigured
 
 from .base import BaseBackend
-
-
-def auto_reconnect(self):
-    if self._instance is None or not self._instance.is_open():
-        self.reconnect()
-        
+    
 
 class RethinkBackend(BaseBackend):
     """
@@ -51,7 +48,6 @@ class RethinkBackend(BaseBackend):
         self.table_name = table_name
         if self.connection is None:
             self.connection = r.connect(db=db, timeout=timeout)
-        self.connection.check_open = types.MethodType( auto_reconnect, self.connection)   
         self._create_database()
 
     def _get_payload(self, name, value, tags, id_):
@@ -76,7 +72,7 @@ class RethinkBackend(BaseBackend):
     def report(self, name, metric, value, tags, id_):
         try:
             r.expr(1)
-        except r.errors.ReqlDriverError:
+        except ReqlError:
             self.connection.reconnect(True, self.timeout);
         try:
             table_name = self._get_table_name(metric)
