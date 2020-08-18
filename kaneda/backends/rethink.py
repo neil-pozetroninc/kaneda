@@ -1,19 +1,16 @@
 from __future__ import absolute_import
 
 import logging
-import types
 
 try:
     from rethinkdb import r
 except ImportError:
     r = None
-    
-from rethinkdb.errors import ReqlError
 
 from kaneda.exceptions import ImproperlyConfigured
 
 from .base import BaseBackend
-    
+
 
 class RethinkBackend(BaseBackend):
     """
@@ -31,9 +28,6 @@ class RethinkBackend(BaseBackend):
 
     def __init__(self, db, table_name=None, connection=None, host=None, port=None, user=None, password=None,
                  timeout=0.3):
-
-        self.timeout = timeout
-
         if not r:
             raise ImproperlyConfigured('You need to install the rethinkdb library to use the RethinkDB backend.')
         if connection:
@@ -43,7 +37,6 @@ class RethinkBackend(BaseBackend):
                 self.connection = r.connect(host=host, port=port, db=db, user=user, password=password, timeout=timeout)
             else:
                 self.connection = r.connect(host=host, port=port, db=db, timeout=timeout)
-             
         self.db = db
         self.table_name = table_name
         if self.connection is None:
@@ -70,17 +63,6 @@ class RethinkBackend(BaseBackend):
         return self.table_name or metric
 
     def report(self, name, metric, value, tags, id_):
-        try:
-            r.expr(1).run(self.connection)
-        except ReqlError:
-            try:
-                self.connection.reconnect(True, self.timeout)
-            except ReqlError:
-                try:
-                    self.connection.close()
-                except ReqlError:
-                    pass
-                self.connection = r.connect(db=self.db, timeout=self.timeout)
         try:
             table_name = self._get_table_name(metric)
             self._create_table(metric)
